@@ -1,0 +1,6 @@
+@DotNetCrudWithMongoDb_HostAddress = http://localhost:5128
+
+GET {{DotNetCrudWithMongoDb_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
