@@ -1,10 +1,18 @@
+using DotNetCrudWithMongoDb.Context;
 using DotNetCrudWithMongoDb.Models;
 using DotNetCrudWithMongoDb.Services;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.Configure<BookStoreDatabaseSettings>(builder.Configuration.GetSection("BookStoreDatabase"));
+
+builder.Services.AddSingleton<MongoDBContext>(serviceProvider =>
+{
+    var settings = serviceProvider.GetRequiredService<IOptions<BookStoreDatabaseSettings>>().Value;
+    return new MongoDBContext(settings.ConnectionString, settings.DatabaseName);
+});
 
 builder.Services.AddSingleton<BooksService>();
 
