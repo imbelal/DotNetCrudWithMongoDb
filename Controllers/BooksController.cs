@@ -1,5 +1,5 @@
 using DotNetCrudWithMongoDb.Models;
-using DotNetCrudWithMongoDb.Services;
+using DotNetCrudWithMongoDb.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DotNetCrudWithMongoDb.Controllers;
@@ -8,19 +8,23 @@ namespace DotNetCrudWithMongoDb.Controllers;
 [Route("api/[controller]")]
 public class BooksController : ControllerBase
 {
-    private readonly BooksService _booksService;
+    private readonly IMongoRepository<Book> _bookRepository;
 
-    public BooksController(BooksService booksService) =>
-        _booksService = booksService;
+    public BooksController(IMongoRepositoryFactory repositoryFactory)
+    {
+        _bookRepository = repositoryFactory.CreateRepository<Book>("Books");
+    }
 
     [HttpGet]
-    public async Task<List<Book>> Get() =>
-        await _booksService.GetAsync();
+    public async Task<List<Book>> GetAllAsync()
+    {
+        return await _bookRepository.GetAllAsync();
+    }
 
     [HttpGet("{id:length(24)}")]
-    public async Task<ActionResult<Book>> Get(string id)
+    public async Task<ActionResult<Book>> GetByIdAsync(string id)
     {
-        var book = await _booksService.GetAsync(id);
+        var book = await _bookRepository.GetByIdAsync(id);
 
         if (book is null)
         {
@@ -31,17 +35,17 @@ public class BooksController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post(Book newBook)
+    public async Task<IActionResult> AddAsync(Book newBook)
     {
-        await _booksService.CreateAsync(newBook);
+        await _bookRepository.AddAsync(newBook);
 
-        return CreatedAtAction(nameof(Get), new { id = newBook.Id }, newBook);
+        return CreatedAtAction(nameof(GetByIdAsync), new { id = newBook.Id }, newBook);
     }
 
     [HttpPut("{id:length(24)}")]
-    public async Task<IActionResult> Update(string id, Book updatedBook)
+    public async Task<IActionResult> UpdateAsync(string id, Book updatedBook)
     {
-        var book = await _booksService.GetAsync(id);
+        var book = await _bookRepository.GetByIdAsync(id);
 
         if (book is null)
         {
@@ -50,22 +54,22 @@ public class BooksController : ControllerBase
 
         updatedBook.Id = book.Id;
 
-        await _booksService.UpdateAsync(id, updatedBook);
+        await _bookRepository.UpdateAsync(id, updatedBook);
 
         return NoContent();
     }
 
     [HttpDelete("{id:length(24)}")]
-    public async Task<IActionResult> Delete(string id)
+    public async Task<IActionResult> DeleteAsync(string id)
     {
-        var book = await _booksService.GetAsync(id);
+        var book = await _bookRepository.GetByIdAsync(id);
 
         if (book is null)
         {
             return NotFound();
         }
 
-        await _booksService.RemoveAsync(id);
+        await _bookRepository.DeleteAsync(id);
 
         return NoContent();
     }

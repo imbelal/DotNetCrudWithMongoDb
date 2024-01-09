@@ -1,6 +1,6 @@
 using DotNetCrudWithMongoDb.Context;
 using DotNetCrudWithMongoDb.Models;
-using DotNetCrudWithMongoDb.Services;
+using DotNetCrudWithMongoDb.Repositories;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,13 +8,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.Configure<BookStoreDatabaseSettings>(builder.Configuration.GetSection("BookStoreDatabase"));
 
-builder.Services.AddSingleton<MongoDBContext>(serviceProvider =>
+builder.Services.AddScoped<IApplicationDbContext>(serviceProvider =>
 {
     var settings = serviceProvider.GetRequiredService<IOptions<BookStoreDatabaseSettings>>().Value;
     return new MongoDBContext(settings.ConnectionString, settings.DatabaseName);
 });
 
-builder.Services.AddSingleton<BooksService>();
+
+// Register MongoRepositoryFactory
+builder.Services.AddScoped<IMongoRepositoryFactory, MongoRepositoryFactory>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(

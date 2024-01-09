@@ -1,9 +1,8 @@
-﻿using DotNetCrudWithMongoDb.Models;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 
 namespace DotNetCrudWithMongoDb.Context
 {
-    public class MongoDBContext
+    public class MongoDBContext : IApplicationDbContext
     {
         private readonly IMongoDatabase _database;
 
@@ -13,6 +12,9 @@ namespace DotNetCrudWithMongoDb.Context
             _database = client.GetDatabase(databaseName);
         }
 
-        public IMongoCollection<Book> Books => _database.GetCollection<Book>("Books");
+        public IMongoCollection<T> GetMongoDbCollection<T>(string collectionName) where T : class
+        {
+            return _database.GetCollection<T>(collectionName);
+        }
     }
 }
